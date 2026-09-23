@@ -22,7 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProductRepositoryIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(org.testcontainers.utility.DockerImageName.parse("pgvector/pgvector:pg16")
+                              .asCompatibleSubstituteFor("postgres"));     );
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {

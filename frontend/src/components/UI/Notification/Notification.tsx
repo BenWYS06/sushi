@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react'
 import clsx from 'clsx'
@@ -16,13 +16,7 @@ interface Props {
 }
 
 export default function Notification({ id, message, type, isVisible, onClose, duration = 5000, position = 0 }: Props) {
-  const [isHiding, setIsHiding] = useState(false)
-
-  useEffect(() => {
-    if (!isVisible && !isHiding) {
-      setIsHiding(true)
-    }
-  }, [isVisible])
+  const isHiding = !isVisible
 
   useEffect(() => {
     if (isVisible && duration > 0) {

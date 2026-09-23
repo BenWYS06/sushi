@@ -33,6 +33,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- prefilling the form once the logged-in user loads asynchronously
       setCustomerName(user.name);
       setPhone(user.phone);
       if (user.address) {

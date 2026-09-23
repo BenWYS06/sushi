@@ -9,22 +9,25 @@ import Loading from "../UI/Loading/Loading";
 import { Search } from "lucide-react";
 import styles from "./MenuSection.module.css";
 
+const categories: Category[] = Object.keys(CATEGORY_DISPLAY) as Category[];
+
 export default function MenuSection() {
   const { products, totalPages, loading, loadMoreProducts } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(0);
-  const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<Category | "">("");
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
+  const [activeCategory, setActiveCategory] = useState<Category | "">(() => {
+    const cat = searchParams.get("category") as Category | "";
+    return cat && categories.includes(cat) ? cat : "";
+  });
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const categories: Category[] = Object.keys(CATEGORY_DISPLAY) as Category[];
-
   useEffect(() => {
-    const cat = searchParams.get("category") as Category | "";
-    const q = searchParams.get("search") || "";
-    if (cat && categories.includes(cat)) setActiveCategory(cat);
-    if (q) setSearch(q);
-    loadMoreProducts(0, { search: q || undefined, category: cat || undefined });
+    loadMoreProducts(0, {
+      search: search || undefined,
+      category: activeCategory || undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount, using the initial values read above
   }, []);
 
   const handleSearchChange = (value: string) => {

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Tag, Clock, Menu as MenuIcon } from "lucide-react";
 import { useApi } from "../../hooks/common/useApi";
@@ -11,6 +11,7 @@ import styles from "./PromotionPage.module.css";
 export default function PromotionPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: promotion, loading, execute } = useApi<PromotionResponse>();
+  const [now] = useState(() => Date.now());
 
   useEffect(() => {
     if (slug) execute(() => promotionsApi.getPromotionBySlug(slug));
@@ -20,7 +21,7 @@ export default function PromotionPage() {
   if (!promotion) return null;
 
   const daysLeft = Math.ceil(
-    (new Date(promotion.endDate).getTime() - Date.now()) /
+    (new Date(promotion.endDate).getTime() - now) /
       (1000 * 60 * 60 * 24),
   );
 

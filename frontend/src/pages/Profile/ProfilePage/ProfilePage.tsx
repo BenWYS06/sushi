@@ -28,6 +28,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- prefilling the form once the logged-in user loads asynchronously
       setName(user.name);
       setPhone(user.phone);
       setCity(user.address?.city || "");

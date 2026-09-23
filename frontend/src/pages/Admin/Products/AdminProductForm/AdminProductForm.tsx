@@ -101,6 +101,7 @@ export default function AdminProductForm() {
 
   useEffect(() => {
     if (isEdit && product) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing form fields once the product finishes loading asynchronously
       setName(product.name);
       setDescription(product.description || "");
       setPrice(product.price.toString());

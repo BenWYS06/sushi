@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Tag, Clock } from "lucide-react";
 import { usePromotions } from "../../../hooks/features/usePromotions";
@@ -5,6 +6,7 @@ import styles from "./PromotionsSection.module.css";
 
 export default function PromotionsSection() {
   const { promotions } = usePromotions();
+  const [now] = useState(() => Date.now());
 
   if (promotions.length === 0) return null;
 
@@ -14,7 +16,7 @@ export default function PromotionsSection() {
       <div className={styles.list}>
         {promotions.map((promo) => {
           const daysLeft = Math.ceil(
-            (new Date(promo.endDate).getTime() - Date.now())/
+            (new Date(promo.endDate).getTime() - now) /
               (1000 * 60 * 60 * 24),
           );
 

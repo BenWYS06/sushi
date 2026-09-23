@@ -29,6 +29,7 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (slug) getProductBySlug(slug);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset selection whenever the route's product changes
     setQuantity(1);
     setActiveImage(0);
   }, [slug]);

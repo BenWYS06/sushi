@@ -18,6 +18,7 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | null>(null)
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook intentionally co-located with its Provider
 export const useNotification = () => {
   const context = useContext(NotificationContext)
   if (!context) throw new Error('useNotification must be used within NotificationProvider')

@@ -33,7 +33,7 @@ jobs:
 
       - name: Run tests
         working-directory: backend
-        run: chmod +x gradlew && ./gradlew test
+        run: chmod +x gradlew && ./gradlew test --stacktrace
 
   build:
     name: Build jar

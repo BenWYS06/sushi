@@ -1,0 +1,43 @@
+# Activate with --spring.profiles.active=ai (or docker,ai).
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/ai-migration
+    # Allows V25 (pgvector) to run if the app previously started without the ai profile
+    # and already applied the regular V26 chat-table migration.
+    out-of-order: true
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: never
+      chat:
+        model: ${OLLAMA_CHAT_MODEL:llama3.2:3b}
+        temperature: 0.2
+        num-predict: 600
+      embedding:
+        model: nomic-embed-text
+    vectorstore:
+      type: pgvector
+      pgvector:
+        table-name: vector_store
+        initialize-schema: false
+        dimensions: 768
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+    retry:
+      max-attempts: 1
+    tools:
+      limits:
+        max-calls-per-tool-default: 4
+        max-total-tool-calls: 12
+
+app:
+  ai:
+    top-k: 6
+    similarity-threshold: 0.4
+    history-limit: 20
+    # Disabled by default. Set e.g. "0 0 * * * *" for hourly refresh.
+    indexing-cron: ${AI_INDEXING_CRON:-}

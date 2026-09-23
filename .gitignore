@@ -1,0 +1,7 @@
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+.env
+docker-compose.override.yml
+.gradle-user-home/

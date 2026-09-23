@@ -1,0 +1,158 @@
+package com.sushishop.order;
+
+import com.sushishop.order.dto.request.CreateOrderRequest;
+import com.sushishop.order.dto.request.DispatchOrderRequest;
+import com.sushishop.order.dto.response.OrderResponse;
+import com.sushishop.order.dto.response.UserOrderResponse;
+import com.sushishop.shared.enums.DeliveryMethod;
+import com.sushishop.shared.enums.OrderStatus;
+import com.sushishop.shared.enums.PaymentMethod;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/orders")
+@RequiredArgsConstructor
+@Tag(name = "Orders", description = "Order management endpoints")
+public class OrderController {
+
+    private final OrderService orderService;
+    private final OrderCreationService orderCreationService;
+    private final OrderQueryService orderQueryService;
+
+    @PostMapping
+    @Operation(summary = "Create new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Order created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request,
+                                                @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("POST /api/orders - {}", request.customerName());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderCreationService.create(request, userDetails.getUsername()));
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "Get current user orders")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of user orders")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Page<UserOrderResponse>> getMyOrders(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("GET /api/orders/my - user: {}", userDetails.getUsername());
+        return ResponseEntity.ok(orderQueryService.getByUser(userDetails.getUsername(), pageable));
+    }
+
+    @GetMapping
+@PreAuthorize("hasAnyRole('ADMIN', 'COURIER')")
+@Operation(summary = "Get dashboard orders")
+@SecurityRequirement(name = "bearerAuth")
+public ResponseEntity<Page<OrderResponse>> getAll(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC)
+        Pageable pageable,
+        @RequestParam(required = false) OrderStatus status,
+        @RequestParam(required = false) DeliveryMethod deliveryMethod,
+        @RequestParam(required = false) PaymentMethod paymentMethod,
+        @RequestParam(required = false) String search
+) {
+    boolean isCourier = userDetails.getAuthorities()
+            .stream()
+            .anyMatch(authority -> authority.getAuthority().equals("ROLE_COURIER"));
+
+    if (isCourier) {
+        log.info("GET /api/orders - courier: {}", userDetails.getUsername());
+        return ResponseEntity.ok(
+                orderQueryService.getByCourier(userDetails.getUsername(), pageable)
+        );
+    }
+
+    log.info("GET /api/orders - admin: {}", userDetails.getUsername());
+    return ResponseEntity.ok(
+            orderQueryService.getAll(
+                    pageable,
+                    status,
+                    deliveryMethod,
+                    paymentMethod,
+                    search
+            )
+    );
+}
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get order by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order found"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public ResponseEntity<OrderResponse> getById(@PathVariable Long id) {
+        log.info("GET /api/orders/{} - by ID", id);
+        return ResponseEntity.ok(orderService.getById(id));
+    }
+
+    @PatchMapping("/{id}/status")
+@PreAuthorize("hasAnyRole('ADMIN', 'COURIER')")
+@Operation(summary = "Update order status")
+@SecurityRequirement(name = "bearerAuth")
+public ResponseEntity<OrderResponse> updateStatus(
+        @PathVariable Long id,
+        @RequestParam OrderStatus status,
+        @AuthenticationPrincipal UserDetails userDetails
+) {
+    boolean isCourier = userDetails.getAuthorities()
+            .stream()
+            .anyMatch(authority -> authority.getAuthority().equals("ROLE_COURIER"));
+
+    log.info(
+            "PATCH /api/orders/{}/status - {} by {}",
+            id,
+            status,
+            userDetails.getUsername()
+    );
+
+    return ResponseEntity.ok(
+            orderService.updateStatus(
+                    id,
+                    status,
+                    userDetails.getUsername(),
+                    isCourier
+            )
+    );
+}
+
+    @PatchMapping("/{id}/dispatch")
+@PreAuthorize("hasRole('ADMIN')")
+@Operation(summary = "Assign courier and dispatch a delivery order")
+@SecurityRequirement(name = "bearerAuth")
+public ResponseEntity<OrderResponse> dispatch(
+        @PathVariable Long id,
+        @Valid @RequestBody DispatchOrderRequest request
+) {
+    log.info("PATCH /api/orders/{}/dispatch - courier: {}", id, request.courierId());
+
+    return ResponseEntity.ok(
+            orderService.dispatch(id, request.courierId())
+    );
+}
+}

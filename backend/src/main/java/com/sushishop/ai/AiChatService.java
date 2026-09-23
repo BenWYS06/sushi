@@ -38,7 +38,7 @@ public class AiChatService {
             - Never say an order is placed until the customer calls the separate confirm endpoint.
             - You have no payment tool and cannot charge a customer.
             - Ask for missing delivery details instead of guessing them.
-            - Keep answers brief and practical.
+            - Keep answers brief and practical
             """;
 
     private final ChatSessionRepository sessionRepository;

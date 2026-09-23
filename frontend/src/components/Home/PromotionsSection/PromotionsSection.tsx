@@ -14,7 +14,7 @@ export default function PromotionsSection() {
       <div className={styles.list}>
         {promotions.map((promo) => {
           const daysLeft = Math.ceil(
-            (new Date(promo.endDate).getTime() - Date.now()) /
+            (new Date(promo.endDate).getTime() - Date.now())/
               (1000 * 60 * 60 * 24),
           );
 

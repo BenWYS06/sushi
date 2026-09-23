@@ -115,7 +115,7 @@ public class AiTools {
                     .collect(Collectors.joining("\n"));
         });
     }
-I
+
     @Tool(description = "Get recent order statuses for the currently authenticated customer. "
             + "Never ask for or accept an email address for this tool.")
     @Auditable(action = AuditAction.AI_TOOL_CALL, entity = "AiTool:getMyOrderStatus")

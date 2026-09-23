@@ -74,6 +74,10 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    testLogging {
+        // Print the full error message when a test fails, not just class/line.
+          exceptionFormat = 'full'
+         }
 }
 
 tasks.named('bootRun') {

@@ -23,7 +23,7 @@ public class ProductRepositoryIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(org.testcontainers.utility.DockerImageName.parse("pgvector/pgvector:pg16")
-                              .asCompatibleSubstituteFor("postgres"));     );
+                              .asCompatibleSubstituteFor("postgres"));
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
